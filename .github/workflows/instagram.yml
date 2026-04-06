@@ -1,0 +1,41 @@
+name: Instagram Auto Post
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # 毎週月曜 09:00 JST（UTC 00:00）
+  workflow_dispatch:
+    inputs:
+      image_url:
+        description: '公開画像URL'
+        required: true
+        type: string
+      caption:
+        description: 'キャプション'
+        required: true
+        type: string
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout private core repo
+        uses: actions/checkout@v4
+        with:
+          repository: aa-0921/sns-auto-poster-core
+          token: ${{ secrets.PAT_CLASSIC }}
+          path: core
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r core/requirements.txt
+
+      - name: Post to Instagram
+        env:
+          IMAGE_URL: ${{ github.event.inputs.image_url }}
+          CAPTION: ${{ github.event.inputs.caption }}
+        run: python core/scripts/instagram/post.py --image-url "$IMAGE_URL" --caption "$CAPTION"

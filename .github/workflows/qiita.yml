@@ -1,0 +1,58 @@
+name: Qiita Auto Post
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: '記事タイトル'
+        required: true
+        type: string
+      body_file:
+        description: '記事本文ファイルパス（リポジトリ内の相対パス）'
+        required: true
+        type: string
+      tags:
+        description: 'タグ（カンマ区切り）'
+        required: true
+        type: string
+        default: '個人開発,GitHub Actions'
+      private:
+        description: '限定共有記事として投稿'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout private core repo
+        uses: actions/checkout@v4
+        with:
+          repository: aa-0921/sns-auto-poster-core
+          token: ${{ secrets.PAT_CLASSIC }}
+          path: core
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r core/requirements.txt
+
+      - name: Post to Qiita
+        env:
+          ARTICLE_TITLE: ${{ github.event.inputs.title }}
+          BODY_FILE: ${{ github.event.inputs.body_file }}
+          TAGS: ${{ github.event.inputs.tags }}
+          PRIVATE: ${{ github.event.inputs.private }}
+        run: |
+          PRIVATE_FLAG=""
+          if [ "$PRIVATE" = "true" ]; then PRIVATE_FLAG="--private"; fi
+          python core/scripts/qiita/post.py \
+            --title "$ARTICLE_TITLE" \
+            --body-file "$BODY_FILE" \
+            --tags "$TAGS" \
+            $PRIVATE_FLAG
