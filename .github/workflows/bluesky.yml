@@ -31,15 +31,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install -r core/requirements.txt
-
-      - name: Debug secrets (長さのみ確認・値は非表示)
-        env:
-          BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
-          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
         run: |
-          echo "IDENTIFIER 長さ: ${#BLUESKY_IDENTIFIER}"
-          echo "APP_PASSWORD 長さ: ${#BLUESKY_APP_PASSWORD}"
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -r core/requirements.txt
 
       - name: Post to Bluesky
         env:
