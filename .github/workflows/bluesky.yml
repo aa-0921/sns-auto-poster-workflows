@@ -36,4 +36,6 @@ jobs:
       - name: Post to Bluesky
         env:
           POST_TEXT: ${{ github.event.inputs.text }}
+          BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
         run: python core/scripts/bluesky/post.py --text "$POST_TEXT"
