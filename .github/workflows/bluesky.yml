@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       text:
-        description: '投稿テキスト（300文字以内）'
-        required: true
+        description: '投稿テキスト（省略時は content/ からランダム選択）'
+        required: false
         type: string
 
 jobs:
@@ -35,7 +35,12 @@ jobs:
 
       - name: Post to Bluesky
         env:
-          POST_TEXT: ${{ github.event.inputs.text }}
           BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
           BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
-        run: python core/scripts/bluesky/post.py --text "$POST_TEXT"
+          POST_TEXT: ${{ github.event.inputs.text }}
+        run: |
+          if [ -n "$POST_TEXT" ]; then
+            python core/scripts/bluesky/post.py --text "$POST_TEXT"
+          else
+            python core/scripts/bluesky/post.py
+          fi
